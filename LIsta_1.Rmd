@@ -1,0 +1,180 @@
+---
+title: "Lista 1"
+author: "Marcelo Saito"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+ 
+---
+
+# Carregando pacotes
+
+```{r message=FALSE, warning=FALSE}
+
+library(devtools)
+library(ribge)
+library(dplyr)
+library(ggplot2)
+
+
+```
+
+# Baixando banco de dados
+
+```{r}
+pop2020 <- populacao_municipios(2020)
+
+dplyr::glimpse(pop2020)
+
+```
+
+# 1 Qual é a unidade de análise desse banco de dados?  
+  
+município 
+  
+# 2  
+
+## a) Quantos municípios há no estado de São Paulo?  
+645  
+  
+## b) Qual é o menor município do estado?   
+Borá  
+
+## c) Quantos habitantes ele tem? 
+838  
+
+## resolução
+
+```{r}
+
+n_mun_sp <- pop2020 %>% 
+  filter(uf == "SP") %>% 
+  glimpse()
+
+
+menor_mun_sp <- pop2020 %>% 
+  filter(uf == "SP") %>% 
+  select(-uf, -populacao_str) %>% 
+  rename(municipio=nome_munic) %>% 
+  mutate(municipio = tolower(municipio)) %>% 
+  arrange(populacao) %>% 
+  slice(1) %>% 
+  print()
+  
+  
+```
+
+# 3 Para a variável 'populacao', calcule:    
+## a) Média  
+71766.41  
+
+## b) Mediana  
+14141  
+
+## c) Desvio Padrão  
+498489.9  
+
+## d) Variância  
+248492160624  
+
+## Resolução
+
+```{r}
+municipios_sp <- pop2020 %>% 
+  filter(uf == "SP") %>% 
+  select(-uf, -populacao_str) %>% 
+  rename(municipio=nome_munic) %>% 
+  mutate(municipio = tolower(municipio))
+
+media <- municipios_sp %>% 
+  summarise(media_populacao = mean(populacao)) %>% 
+  print()
+
+mediana <- municipios_sp %>% 
+  summarise(mediana_populacao = median(populacao)) %>% 
+  print()
+
+desvio_padrao <- municipios_sp %>% 
+  summarise(sd_populacao = sd(populacao)) %>% 
+  print()
+
+variancia <- municipios_sp %>% 
+  summarise(var_populacao = var(populacao)) %>% 
+  print()
+```
+
+# 4  
+
+## O que você observa?  
+
+A maior parte dos municípios tem pouco menos de 10 mil habitantes  
+
+## Qual a medida de tendência central mais adequada?  
+
+Mediana  
+
+## Resolução
+
+```{r}
+ggplot(municipios_sp , aes(x = populacao)) +
+  geom_density(fill = "blue", alpha = 0.5) +
+  labs(title = "Gráfico de Densidade da População dos Municípios do Estado de SP",
+       x = "População",
+       y = "Densidade") +
+       scale_x_log10()
+```
+
+# 5  
+
+## Quantos municipios com menos de 50 mil habitantes?  
+
+504  
+
+## Em comparação com o gráfico anterior, o que você observa?  
+
+A maioria dos municipios de SP são pequenos, com menos de 50 mil habitantes.  
+
+## Resolução  
+
+```{r}
+menos_50k_mun <- municipios_sp %>% 
+  filter(populacao < 50000)
+ 
+menos_50k_n <- menos_50k_mun %>% 
+  nrow() %>% 
+  print()
+
+
+  ggplot(menos_50k_mun, aes(x = populacao)) +
+  geom_density(fill = "blue", alpha = 0.5) +
+  labs(title = "Gráfico de Densidade da População dos Municípios com menos de 50 mil habitantes - SP",
+       x = "População",
+       y = "Densidade")
+  
+```
+
+# 6 Para esta questão, importe novamente a base de dados original (para 2020).
+Calcule a média da população para cada um dos estados brasileiros e informe quais deles
+possuem maior e menor populaçãao média por município.  
+
+## Resolução
+
+```{r}
+media_estado <- pop2020 %>% 
+  group_by(uf) %>% 
+  summarise(media_pop = mean(populacao))
+
+
+media_menor_maior <- pop2020 %>% 
+  group_by(uf) %>% 
+  summarise(media_pop = mean(populacao)) %>% 
+  arrange(media_pop) %>% 
+  slice(1, 26) %>% 
+  print()
+```
+
+
+
+
+
+
