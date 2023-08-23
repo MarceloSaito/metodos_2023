@@ -1,0 +1,228 @@
+---
+title: "Lista 2"
+author: "Marcelo Saito"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+---
+# carregando pacotes
+
+```{r message=FALSE, warning=FALSE}
+library(PNADcIBGE)
+library(tidyverse)
+library(tidylog)
+library(ggplot2)
+```
+
+# 1  
+
+```{r message=FALSE, warning=FALSE}
+
+data <- get_pnadc(year=2017,
+quarter=4,
+selected=FALSE,
+vars=c("Ano", "Trimestre", "UF", "V2007", "VD4020", "VD4035"),
+design=FALSE,
+savedir=tempdir())
+
+data <- data %>%
+select(Ano, Trimestre, UF, V2007, VD4020, VD4035)
+
+data <- data %>%
+rename(Sexo = V2007,
+Renda = VD4020,
+Horas_trabalhadas = VD4035)
+
+```
+# 2 Calcule:  
+
+## i) Renda Média;  
+
+```{r message=FALSE, warning=FALSE}
+renda_media <- data %>% 
+  summarise(renda_media = mean(Renda, na.rm = TRUE))
+
+print(renda_media)
+
+```
+
+
+## ii) Variância da renda;  
+
+```{r message=FALSE, warning=FALSE}
+var_renda <- data %>% 
+  summarise(var_renda = var(Renda, na.rm = TRUE))
+
+print(var_renda)
+```
+
+
+
+
+## iii) Renda média dos homens e das mulheres;  
+
+```{r message=FALSE, warning=FALSE}
+renda_media_h <- data %>% 
+  filter(Sexo == "Homem") %>% 
+  summarise(renda_media_h = mean(Renda, na.rm = TRUE))
+
+print(renda_media_h)
+
+renda_media_m <- data %>% 
+  filter(Sexo == "Mulher") %>% 
+  summarise(renda_media_m = mean(Renda, na.rm = TRUE))
+
+print(renda_media_m)
+  
+  
+```
+
+## iv) a renda média em cada estado brasileiro;
+
+```{r}
+renda_media_estado <- data %>% 
+  group_by(UF) %>% 
+  summarise(renda_media_estado = mean(Renda, na.rm = TRUE))
+
+print(renda_media_estado)
+```
+
+
+## v) Covariância entre a renda e o número de horas trabalhadas;    
+
+```{r message=FALSE, warning=FALSE}
+cov_renda_h <- data %>% 
+  summarise(covariancia = cov(Horas_trabalhadas, Renda, use = "pairwise.complete.obs"))
+
+print(cov_renda_h)
+```
+
+
+# 3 Exemplifique a veracidade da equação, considerando X = Renda, Y = Horas trabalhadas, a = 2 e b = 3.  
+$$ E[aX + bY] = a * E[X] + b * E[Y]$$  
+
+## resolução:  
+
+```{r message=FALSE, warning=FALSE}
+
+a <- 2
+
+b <- 3
+
+e_x <- data %>% 
+  summarise(media = mean(Renda, na.rm = TRUE))
+
+e_y <- data %>% 
+  summarise(media = mean(Horas_trabalhadas, na.rm = TRUE))
+
+l_e <- data %>% 
+  summarise(esquerdo = mean(a * Renda + b * Horas_trabalhadas, na.rm = TRUE))
+
+l_d <- a * e_x + b * e_y
+
+l_e == l_d
+  
+```
+
+# 4 Apresente um gráfico que permita visualização adequada da média da renda por estado brasileiro e sexo.  
+
+## resolução:  
+
+
+```{r message=FALSE, warning=FALSE}
+renda_uf_sexo <- data %>% 
+  aggregate(Renda ~ UF + Sexo, FUN = mean)
+  
+ggplot(renda_uf_sexo, aes(x = UF, y = Renda, fill = Sexo)) +
+  geom_bar(stat = "summary", position = "dodge")+ 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+  
+```
+
+# 5 Agora trabalharemos explicitamente com a esperança condicional. Note que essa lógica estava implícita nas questóes anteriores. Assuma duas variáveis aleatórias, X e Y, tais que X = renda e Y = horas trabalhadas. Calcule:  
+
+
+$$ E[X|10 \leq Y \leq 20] $$  
+
+
+
+```{r message=FALSE, warning=FALSE}
+e_xtalq_10y20 <- data %>% 
+  filter(Horas_trabalhadas >= 10 & Horas_trabalhadas <= 20) %>% 
+  summarise(media = mean(Renda, na.rm = TRUE))
+
+print(e_xtalq_10y20)
+```  
+
+
+
+$$ E[X|Y \geq 20] $$  
+
+
+```{r message=FALSE, warning=FALSE}
+e_xtalq_ymaior20 <- data %>% 
+  filter(Horas_trabalhadas >= 20) %>% 
+  summarise(media = mean(Renda, na.rm = TRUE))
+
+print(e_xtalq_ymaior20)
+```
+
+# 6 Para os itens seguintes (i a iv), remova todas as observações cuja renda seja superior a 10.000 reais.
+
+## i) apresente um gráfico de dispersão da variável renda. Interprete;  
+
+```{r message=FALSE, warning=FALSE}
+renda_10k <- data %>% 
+  filter(Renda <= 10000)
+
+ggplot(renda_10k, aes(x = Renda , y = Horas_trabalhadas)) +
+  geom_point()
+```
+
+## ii) qual é a probabilidade de que, ao retirarmos aleatoriamente uma observação (um indivíduo) dessa base de dados, sua renda esteja entre 1000 e 2000 reais? Apenas para propósitos didáticos, ignore o erro amostral e trate a sua base de dados como uma população (não faça isso em sua pesquisa);  
+
+```{r message=FALSE, warning=FALSE}
+intervalo_1k_2k <- data %>% 
+  filter(Renda >= 1000 & Renda <= 2000) %>% 
+  nrow()  
+  
+
+total <- data %>% 
+  nrow() 
+
+p <- round(intervalo_1k_2k/total * 100, 2)
+
+print(p)
+```
+
+
+## iii) apresente um gráfico de dispersão da renda dado que as horas trabalhadas (Y) sejam menores ou iguais a 20;  
+
+```{r message=FALSE, warning=FALSE}
+h_menorigual_20 <- data %>% 
+  filter(Horas_trabalhadas <= 20)
+
+ggplot(h_menorigual_20, aes(x = Renda, y = Horas_trabalhadas)) +
+  geom_point()
+```
+
+
+## iv) calcule:    
+
+
+
+$$ P(1000 < X < 2000|Y \leq 20) $$  
+
+
+```{r message=FALSE, warning=FALSE}
+x_1 <- data %>% 
+  filter(Renda > 1000 & Renda <2000)
+
+y_1 <- data %>% 
+  filter(Horas_trabalhadas <= 20)
+
+
+```
+
+
