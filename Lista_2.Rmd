@@ -121,6 +121,10 @@ l_e <- data %>%
 l_d <- a * e_x + b * e_y
 
 l_e == l_d
+
+print(l_e)
+
+print(l_d)
   
 ```
 
@@ -176,8 +180,14 @@ print(e_xtalq_ymaior20)
 renda_10k <- data %>% 
   filter(Renda <= 10000)
 
-ggplot(renda_10k, aes(x = Renda , y = Horas_trabalhadas)) +
-  geom_point()
+# ggplot(renda_10k, aes(x = Renda , y = Horas_trabalhadas)) +
+#   geom_point()
+
+ggplot(renda_10k, aes(x = Renda)) +
+geom_density(fill = "blue", alpha = 0.5) +
+labs(title = "Gráfico de Densidade da da Renda",
+x = "Renda",
+y = "Densidade")
 ```
 
 ## ii) qual é a probabilidade de que, ao retirarmos aleatoriamente uma observação (um indivíduo) dessa base de dados, sua renda esteja entre 1000 e 2000 reais? Apenas para propósitos didáticos, ignore o erro amostral e trate a sua base de dados como uma população (não faça isso em sua pesquisa);  
@@ -188,10 +198,10 @@ intervalo_1k_2k <- data %>%
   nrow()  
   
 
-total <- data %>% 
-  nrow() 
+total10k <- renda_10k %>% 
+  nrow()
 
-p <- round(intervalo_1k_2k/total * 100, 2)
+p <- round(intervalo_1k_2k/total10k * 100, 2)
 
 print(p)
 ```
@@ -203,16 +213,20 @@ print(p)
 h_menorigual_20 <- data %>% 
   filter(Horas_trabalhadas <= 20)
 
-ggplot(h_menorigual_20, aes(x = Renda, y = Horas_trabalhadas)) +
-  geom_point()
+# ggplot(h_menorigual_20, aes(x = Renda, y = Horas_trabalhadas)) +
+#   geom_point()
+
+ggplot(h_menorigual_20, aes(x = Renda)) +
+geom_density(fill = "blue", alpha = 0.5) +
+labs(title = "Gráfico de Densidade da Renda",
+x = "Renda",
+y = "Densidade")
 ```
 
 
 ## iv) calcule:    
 
-
-
-$$ P(1000 < X < 2000|Y \leq 20) $$  
+$$ P(1000 < X < 2000|Y \leq 20) $$    
 
 
 ```{r message=FALSE, warning=FALSE}
