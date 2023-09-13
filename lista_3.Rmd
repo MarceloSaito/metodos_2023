@@ -1,0 +1,83 @@
+---
+title: "Lista 3"
+author: "Marcelo Saito"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+---
+
+# Carregando pacotes  
+
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+# 1 
+
+```{r message=FALSE, warning=FALSE}
+?rnorm # cria uma distribuição normal com números "aleatórios"
+
+rnorm(100, 0 , 1)
+
+```
+
+
+# 2   
+
+```{r}
+x <- rnorm(100, mean = 2, sd = 1)
+
+mean(x) 
+
+# Pois o computador gerou 100 números aleatórios, o que faz a média ser aproximadamente 2.  
+
+```
+# 4 
+```{r}
+vetor_medias <- numeric()
+vetor_medias[1] <- mean(rnorm(100, mean=2, sd=1))
+vetor_medias[2] <- mean(rnorm(100, mean=2, sd=1))
+
+print(vetor_medias)
+```
+# 5  
+
+```{r}
+
+for( i in 1:30){
+  vetor_medias[i] <- mean(rnorm(100, mean=2, sd=1))
+}
+```
+# 6 
+```{r message=FALSE, warning=FALSE}
+df <- data.frame(medias = vetor_medias, sim_id = 1:30)
+
+ggplot(df, aes(x = medias)) +
+  geom_histogram()
+
+dfmean <- df %>% 
+  summarise(media = mean(medias),
+            desvio = sd(medias)) %>% 
+  print()
+  
+```
+
+# 7    
+
+```{r}
+jogar_moeda <- rbinom(n = 100, size = 1, prob = .5)
+
+jogar_moeda_10 <- function(){
+  sample(c("cara", "coroa"), size = 1)
+}
+
+for (i in 1:10){
+  resultado <- jogar_moeda_10()
+  print(resultado)
+}
+```
+# 8  
+
+
